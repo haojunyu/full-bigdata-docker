@@ -126,9 +126,60 @@ docker-compose down</code></pre>
 
 然后可以进入/code目录提交任务，完成计算。如下图所示：
 ![命令行环境下提交任务](https://github.com/ruoyu-chen/hadoop-docker/raw/master/images/submitJob.png)
-##3.已知问题
+##3.Docker相关
+- `docker ps -a`(查看所有的容器,包括已经停止的)
+- 重启:首先将容器启动起来,然后依次执行上面的脚本,`docker-compose exec spark-master /bin/bash`进入shell.
+- 查看挂载信息:`docker inspect spark-master | grep volume`
 
-待完善
-##4.注意事项
+##4.集群相关
+### (1) HDFS上传下载文件
+- 上传:`hdfs dfs -put /code.yun.csv /user`
+- 下载:`hdfs dfs -get /user/yun.csv /code`
+- 查看:`dfs dfs -ls /user`
 
-待完善
+### (2) 在web ui中查看文件
+![](./images/hdfs-file-browser.png) 
+
+### (3)spark web ui
+![](./images/spark-web-ui.png) 
+
+### (4)yarn web ui
+![](./images/application_yarn_ui.png) 
+
+
+### (5)使用idea打包spark
+- 首先需要注意的是jdk的版本一定要和这里的1.8.0对应
+- 使用maven构建项目,[pom.xml文件](./pom.xml) 
+- 求最大值:
+```
+package yun.mao
+
+/**
+  * @Classname MaxPrice
+  * @Description TODO
+  * @Date 19-3-18 下午2:34
+  * @Created by mao<tianmao818@qq.com>
+  */
+import org.apache.spark.SparkContext._
+import org.apache.spark.{SparkConf,SparkContext}
+object MaxPrice {
+  def main(args: Array[String]){
+    val conf = new SparkConf().setAppName("Max Price")
+    val sc = new SparkContext(conf)
+
+    sc.textFile(args(0))
+      .map(_.split(","))
+      .map(rec => ((rec(0).split("-"))(0).toInt, rec(1).toFloat))
+      .reduceByKey((a,b) => Math.max(a,b))
+      .saveAsTextFile(args(1))
+  }
+}
+```
+
+### (6)使用spark-submit提交到集群
+```
+spark-submit --class yun.mao.MaxPrice	--master yarn	--deploy-mode cluster	yunmao.jar	hdfs://hadoop-master:54310/user/yun.csv	hdfs://hadoop-master:54310/user/mao.txt
+```
+
+
+
