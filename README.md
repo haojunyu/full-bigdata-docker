@@ -232,3 +232,23 @@ countsByAge.show()
 countsByAge.write.format("json").save("s3a://...")
 ```
 ![](./images/spark-shell-mysql.png) 
+### (11)机器学习的第一个例子
+```
+ val sqlContext=new org.apache.spark.sql.SQLContext(sc)
+ import sqlContext.implicits._
+ val df = Seq(
+  (1,5),
+  (1,6),
+  (1,7),
+  (1,8),
+  (0,1),
+  (0,2),
+  (0,3),
+  (0,4)
+).toDF("label", "features")
+import org.apache.spark.ml.classification.LogisticRegression
+val model = lr.fit(df)
+val weights = model.weights
+model.transform(df).show()
+```
+### (12)logistic regression完整案例[戳这里](./logistic-regression.ms) 
