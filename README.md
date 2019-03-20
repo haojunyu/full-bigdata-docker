@@ -1,4 +1,4 @@
-#基于Docker的Hadoop开发测试环境使用说明
+#基于Docker的大数据开发测试环境使用说明
 ## 1.基本软件环境介绍
 
 ### 1.1 软件版本
@@ -12,6 +12,14 @@
 - Zookeeper: 3.4.8
 - 基于docker-compose管理镜像和容器，并进行集群的编排
 - 所有软件的二进制包均通过网络下载。其中包含自行编译的Hadoop和Protobuf二进制包，保存在Github上，其它软件的二进制包均使用Apache官方镜像。
+
+| 工具 | 介绍 |
+| --- | --- |
+| hadoop | |
+| spark | |
+| hive | |
+| hbase | |
+| Zookeeper | |
 
 
 ### 1.2 镜像依赖关系
@@ -251,4 +259,4 @@ val model = lr.fit(df)
 val weights = model.weights
 model.transform(df).show()
 ```
-### (12)logistic regression完整案例[戳这里](./logistic-regression.ms) 
+### (12)logistic regression完整案例[戳这里](./logistic-regression.md) 
