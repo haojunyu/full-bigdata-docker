@@ -178,4 +178,57 @@ spark-submit --class yun.mao.MaxPrice	--master yarn	--deploy-mode cluster	yunmao
 
 ### (8)hbase的使用
 
+### (9)spark shell统计行数
+```
+val lines = sc.textFile("data.txt")
+val lineLengths = lines.map(s => s.length)
+val totalLength = lineLengths.reduce((a, b) => a + b)
+```
+### (10)使用mysql数据库
+- 进入mysql容器:`docker exec -it mysql容器ID /bin/bash  `
 
+```
+# 在配置文件中查看mysql配置信息
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - "./volume/mysql:/var/lib/mysql"
+    container_name: mysql
+    hostname: mysql
+    networks:
+      - spark
+    environment:
+      - MYSQL_ROOT_PASSWORD=hadoop
+    tty: true
+
+CREATE TABLE `people` (
+  `name` varchar(150) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY  (`age`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `people` VALUES("mao",24);
+INSERT INTO `people` VALUES("yun",24);
+
+```
+- spark连接数据库
+```
+val sqlContext=new org.apache.spark.sql.SQLContext(sc)
+// Creates a DataFrame based on a table named "people"
+// stored in a MySQL database.
+//首先使用docker inspect查看容器的ip
+// 使用useSSL=false,其他参数分割使用&符号
+val url ="jdbc:mysql://172.20.0.2:3306/test?useSSL=false&user=root&password=hadoop"
+val df = sqlContext.read.format("jdbc").option("url", url).option("dbtable", "people").load()
+
+// Looks the schema of this DataFrame.
+df.printSchema()
+
+// Counts people by age
+val countsByAge = df.groupBy("age").count()
+countsByAge.show()
+
+// Saves countsByAge to S3 in the JSON format.
+countsByAge.write.format("json").save("s3a://...")
+```
+![](./images/spark-shell-mysql.png) 
