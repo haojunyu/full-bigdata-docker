@@ -85,7 +85,7 @@ services:
     tty: true
   
   zoo1:
-    image: twinsen/zookeeper:3.4.8
+    image: twinsen/zookeeper:3.4.10
     volumes:
       - "./volume/zk/zoo1:/works"
     container_name: zoo1
@@ -97,7 +97,7 @@ services:
     tty: true
 
   zoo2:
-    image: twinsen/zookeeper:3.4.8
+    image: twinsen/zookeeper:3.4.10
     volumes:
       - "./volume/zk/zoo2:/works"
     container_name: zoo2
@@ -109,7 +109,7 @@ services:
     tty: true
     
   zoo3:
-    image: twinsen/zookeeper:3.4.8
+    image: twinsen/zookeeper:3.4.10
     volumes:
       - "./volume/zk/zoo3:/works"
     container_name: zoo3
@@ -119,7 +119,9 @@ services:
         aliases: 
           - zoo3
     tty: true
+  
+
 
 networks:
   hadoop-docker:
-    external: true
+

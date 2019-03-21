@@ -2,12 +2,29 @@
 ## 1.spark中的RDD,DataSet和DataFrame
 | 类型 | 区别 | 联系 |
 | --- | --- | --- |
-| RDD | | |
-| DataSet | | |
-| DataFrame | | |
+| RDD | RDD不支持sparksql操作 | 三者都有惰性机制，在进行创建、转换，如map方法时，不会立即执行，只有在遇到Action如foreach时，三者才会开始遍历运算| 
+| DataSet | Dataset和DataFrame，因为Dataset和DataFrame拥有完全相同的成员函数，区别只是每一行的数据类型不同.Dataset中，每一行是什么类型是不一定的，在自定义了case class之后可以很自由的获得每一行的信息 | DataFrame与Dataset均支持sparksql的操作，比如select，groupby之类，还能注册临时表/视窗，进行sql语句操作 |
+| DataFrame | DataFrame每一行的类型固定为Row，只有通过解析才能获取各个字段的值 |  |  |
 
 
-## 2.
+```
+//DataFrame/Dataset转RDD：
+val rdd1=testDF.rdd
+val rdd2=testDS.rdd
+//RDD转DataFrame：
+import spark.implicits._
+val testDF = rdd.map {line=>
+      (line._1,line._2)
+    }.toDF("col1","col2")
+//RDD转Dataset：
+import spark.implicits._
+case class Coltest(col1:String,col2:Int)extends Serializable //定义字段名和类型
+val testDS = rdd.map {line=>
+      Coltest(line._1,line._2)
+    }.toDS
+```
+
+## 2. logistic regression案例
 ```scala
 //导入包
 import org.apache.spark.sql.SparkSession
@@ -651,6 +668,7 @@ val affairs = "case when affairs>0 then 1 else 0 end as affairs,"
 val gender = "case when gender='female' then 0 else 1 end as gender,"
 val children = "case when children='yes' then 1 else 0 end as children,"
  
+ //注意使用sql语句直接进行了替换!
 val sqlDF = spark.sql("select " +
   affairs +
   gender +
@@ -702,6 +720,11 @@ sqlDF.show()
 // 预测
 lrModel.transform(testDF).select("features","rawPrediction","probability","prediction").show(30,false)
 
-
-
 ```
+
+
+
+## 3.使用iris flowers数据集来进行测试(将数据存放在hdfs中)
+
+
+
