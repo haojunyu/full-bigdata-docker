@@ -62,41 +62,171 @@ services:
 
 
 
-  zookeeper:
-    image: twinsen/zookeeper:3.4.10
+  zoo1:
+    image: zookeeper
     ports:
       - "2181:2181"
     volumes:
-      - "./volume/zk/zoo:/works"
-    container_name: zookeeper
-    hostname: zookeeper
+      - "./volume/zk/zoo1:/works"
+      - "/home/mao/workspace/spark/bigdata/volume/zookeeper/conf/zoo1:/conf"
+    container_name: zoo1
+    hostname: zoo1
     networks:
       - spark
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 20000
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
     tty: true
 
-  kafka:
-    image: wurstmeister/kafka
-    container_name: kafka
-    hostname: kafka
-    depends_on:
-      - zookeeper
+  zoo2:
+    image: zookeeper
+    ports:
+      - "2182:2181"
+    volumes:
+      - "./volume/zk/zoo2:/works"
+      - "/home/mao/workspace/spark/bigdata/volume/zookeeper/conf/zoo2:/conf"
+    container_name: zoo2
+    hostname: zoo2
     networks:
       - spark
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+    tty: true
+
+
+  zoo3:
+    image: zookeeper
+    ports:
+      - "2183:2181"
+    volumes:
+      - "./volume/zk/zoo3:/works"
+      - "/home/mao/workspace/spark/bigdata/volume/zookeeper/conf/zoo3:/conf"
+    container_name: zoo3
+    hostname: zoo3
+    networks:
+      - spark
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+    tty: true
+
+
+  flume:
+    image: mengluo668/flume
+    volumes:
+      - "./volume/flume:/works"
+      - "./volume/flume/conf:/apache-flume/conf"
+    container_name: flume
+    hostname: flume
+    networks:
+      - spark
+    tty: true
+
+
+
+  kafka1:
+    image: wurstmeister/kafka
+    # restart: always
+    container_name: kafka1
     ports:
       - "9092:9092"
+    networks:
+      - spark
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    links:
+      - zoo1
+      - zoo2
+      - zoo3
     environment:
+      KAFKA_LOG_DIRS: /kafka
+      KAFKA_BROKER_ID: 1
+      KAFKA_CREATE_TOPICS: order-info-topic-1:1:2,order-info-topic-2:1:2,order-info-topic-3:1:2,msgTopic1:1:2,msgTopic2:1:2
+      KAFKA_HOST_NAME: kafka1
+
       HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://_{HOSTNAME_COMMAND}:9094
-      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:19092,OUTSIDE://_{HOSTNAME_COMMAND}:9092
+      KAFKA_LISTENERS: INSIDE://:19092,OUTSIDE://:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+
+      KAFKA_LOG_RETENTION_HOURS: "168"
+      KAFKA_LOG_RETENTION_BYTES: "100000000"
+      KAFKA_ZOOKEEPER_CONNECT:  zoo1:2181,zoo2:2182,zoo3:2183
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
     volumes:
-      - "./volume/kafka:/works"
-    tty: true
+      - /home/mao/workspace/spark/bigdata/volume/kafka/logs/kafka1:/kafka
+      
+  kafka2:
+    image: wurstmeister/kafka
+    # restart: always
+    container_name: kafka2
+    ports:
+      - "9093:9092"
+    networks:
+      - spark
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    links:
+      - zoo1
+      - zoo2
+      - zoo3
+    environment:
+      KAFKA_LOG_DIRS: /kafka
+      KAFKA_BROKER_ID: 2
+      KAFKA_HOST_NAME: kafka2
+
+      HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:19092,OUTSIDE://_{HOSTNAME_COMMAND}:9093
+      KAFKA_LISTENERS: INSIDE://:19092,OUTSIDE://:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+
+      KAFKA_LOG_RETENTION_HOURS: "168"
+      KAFKA_LOG_RETENTION_BYTES: "100000000"
+      KAFKA_ZOOKEEPER_CONNECT:  zoo1:2181,zoo2:2182,zoo3:2183
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+    volumes:
+      - /home/mao/workspace/spark/bigdata/volume/kafka/logs/kafka2:/kafka
+      
+  kafka3:
+    image: wurstmeister/kafka
+    # restart: always
+    container_name: kafka3
+    ports:
+      - "9094:9092"
+    networks:
+      - spark
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    links:
+      - zoo1
+      - zoo2
+      - zoo3
+    environment:
+      KAFKA_LOG_DIRS: /kafka
+      KAFKA_BROKER_ID: 3
+      KAFKA_HOST_NAME: kafka3
+
+      HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:19092,OUTSIDE://_{HOSTNAME_COMMAND}:9094
+      KAFKA_LISTENERS: INSIDE://:19092,OUTSIDE://:9094
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+
+      KAFKA_LOG_RETENTION_HOURS: "168"
+      KAFKA_LOG_RETENTION_BYTES: "100000000"
+      KAFKA_ZOOKEEPER_CONNECT:  zoo1:2181,zoo2:2182,zoo3:2183
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+    volumes:
+      - /home/mao/workspace/spark/bigdata/volume/kafka/logs/kafka3:/kafka
 
 
   spark-master:
@@ -120,8 +250,12 @@ services:
       - spark-slave2
       - spark-slave3
       - mysql
-      - zookeeper
-      - kafka
+      - zoo1
+      - zoo2
+      - zoo3
+      - kafka1
+      - kafka2
+      - kafka3
     networks:
       spark:
         aliases: 
