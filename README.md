@@ -1,26 +1,23 @@
-#基于Docker的大数据开发测试环境使用说明
+# 基于Docker的大数据开发测试环境搭建及使用说明
 ## 1.基本软件环境介绍
 
 ### 1.1 软件版本
 
 - 操作系统: CentOS 6
 - Java环境: OpenJDK 8
-- Hadoop: 2.7.2
-- Spark: 2.1.0
-- Hive: 2.1.1
-- HBase: 1.2.2
-- Zookeeper: 3.4.8
 - 基于docker-compose管理镜像和容器，并进行集群的编排
-- 所有软件的二进制包均通过网络下载。其中包含自行编译的Hadoop和Protobuf二进制包，保存在Github上，其它软件的二进制包均使用Apache官方镜像。
+
 
 | 工具 | 介绍 |
 | --- | --- |
-| hadoop | |
-| spark | |
-| hive | |
-| hbase | |
-| Zookeeper | |
-
+| flume | Flume是Cloudera提供的一个高可用的，高可靠的，分布式的海量日志采集、聚合和传输的系统，Flume支持在日志系统中定制各类数据发送方，用于收集数据；同时，Flume提供对数据进行简单处理，并写到各种数据接受方（可定制）的能力。 |
+| kafka | Kafka是由Apache软件基金会开发的一个开源流处理平台，由Scala和Java编写。Kafka是一种高吞吐量的分布式发布订阅消息系统，它可以处理消费者规模的网站中的所有动作流数据。  |
+| zookeeper | ZooKeeper 是一个开源的分布式协调服务，由雅虎创建，是 Google Chubby 的开源实现。 分布式应用程序可以基于 ZooKeeper 实现诸如数据发布/订阅、负载均衡、命名服务、分布式协 调/通知、集群管理、Master 选举、配置维护，名字服务、分布式同步、分布式锁和分布式队列 等功能。|
+| hadoop | Hadoop是一个由Apache基金会所开发的分布式系统基础架构。 |
+| spark | Apache Spark 是专为大规模数据处理而设计的快速通用的计算引擎。Spark是UC Berkeley AMP lab (加州大学伯克利分校的AMP实验室)所开源的类Hadoop MapReduce的通用并行框架，Spark，拥有Hadoop MapReduce所具有的优点；但不同于MapReduce的是——Job中间输出结果可以保存在内存中，从而不再需要读写HDFS，因此Spark能更好地适用于数据挖掘与机器学习等需要迭代的MapReduce的算法。|
+| hive | hive是基于Hadoop的一个数据仓库工具，可以将结构化的数据文件映射为一张数据库表，并提供简单的sql查询功能，可以将sql语句转换为MapReduce任务进行运行。 其优点是学习成本低，可以通过类SQL语句快速实现简单的MapReduce统计，不必开发专门的MapReduce应用，十分适合数据仓库的统计分析。 |
+| hbase | HBase是一个分布式的、面向列的开源数据库，HBase不同于一般的关系数据库，它是一个适合于非结构化数据存储的数据库。另一个不同的是HBase基于列的而不是基于行的模式。|
+| yarn | Apache Hadoop YARN （Yet Another Resource Negotiator，另一种资源协调者）是一种新的 Hadoop 资源管理器，它是一个通用资源管理系统，可为上层应用提供统一的资源管理和调度，它的引入为集群在利用率、资源统一管理和数据共享等方面带来了巨大好处。|
 
 ### 1.2 镜像依赖关系
 
@@ -347,10 +344,6 @@ kafka-console-producer.sh --broker-list kafka1:9092 -topic test
 kafka-console-consumer.sh --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --topic test --from-beginning
 ```
 
-
-
-
-
 ### (2)kafka+spark streaming
 - 导入相关的jars:`spark-shell --jars`
 ```
@@ -389,4 +382,11 @@ streamingContext.awaitTermination()
 - 执行结果(flume监控log文件,log文件增加一行触发,flume将增加的行输入到kafka,spark从kafka订阅了topic接收消息,spark streaming自动对接收到的行进行分词并打印)
 ![](./images/flume_kafka_spark_1.png) 
 ![](./images/flume_kafka_spark_2.png)
-![](./images/flume_kafka_spark_3.png)  
+![](./images/flume_kafka_spark_3.png) 
+
+### (3)kafka消息订阅测试软件(Linux)
+
+
+
+
+
