@@ -260,3 +260,133 @@ val weights = model.weights
 model.transform(df).show()
 ```
 ### (12)logistic regression完整案例[戳这里](./logistic-regression.md) 
+
+
+
+## 5.完整的pipeline
+### (1)zookeeper+flume+kafka
+- flume的监控方式
+```
+# 监控一个文件,导向kafka中
+agent.sources=s1
+agent.sinks=k1
+agent.channels=c1
+
+agent.sources.s1.type=exec
+agent.sources.s1.command = tail -f /home/logdfs/log
+agent.sources.s1.channels=c1
+agent.sources.s1.shell = /bin/sh -c
+
+
+agent.channels.c1.type=memory
+agent.channels.c1.capacity=10000
+agent.channels.c1.transactionCapacity=100
+
+agent.sinks.k1.type=org.apache.flume.sink.kafka.KafkaSink
+agent.sinks.k1.brokerList=kafka2:9093
+agent.sinks.k1.topic=test0
+agent.sinks.k1.serializer.class=kafka.serializer.StringEncoder
+
+agent.sinks.k1.channel=c1
+
+
+
+# 其他方式
+
+agent.sources.s1.type = netcat 
+agent.sources.s1.bind = localhost 
+agent.sources.s1.port = 5678
+agent.sources.s1.channels = c1 
+
+agent.sinks.sk1.type = logger 
+agent.sinks.sk1.channel = c1 
+
+
+agent.channels.c1.type = memory
+agent.channels.c1.capacity = 1000 
+agent.channels.c1.transactionCapacity = 100
+
+
+agent.sources.s1.type = spooldir 
+agent.sources.s1.spoolDir =/var/log
+agent.sources.s1.fileHeader = true 
+agent.sources.s1.channels = c1 
+agent.sinks.sk1.type = logger 
+agent.sinks.sk1.channel = c1
+agent.channels.c1.type = memory 
+agent.channels.c1.capacity = 10004 
+agent.channels.c1.transactionCapacity = 100
+
+```
+- zookeeper相关的配置
+```
+clientPort=2181
+dataDir=/data
+dataLogDir=/datalog
+tickTime=2000
+initLimit=5
+syncLimit=2
+autopurge.snapRetainCount=3
+autopurge.purgeInterval=0
+maxClientCnxns=60
+server.1=zoo1:2888:3888
+server.2=zoo2:2888:3888
+server.3=zoo3:2888:3888
+```
+
+
+- 测试kafka(kafka依赖与zookeeper,在docker-compose文件中已经进行了配置,必须在zookeeper服务启动起来的时候kafka才能够被启动起来)
+```
+# 创建topic
+kafka-topics.sh --create --zookeeper zoo1:2181, zoo2:2181, zoo3:2181 --replication-factor 3 --partitions 3 --topic test
+# 查看topic
+kafka-topics.sh --describe --zookeeper zoo1:2181, zoo2:2181, zoo3:2181 --topic test
+# 创建生产者
+kafka-console-producer.sh --broker-list kafka1:9092 -topic test
+# 创建消费者
+kafka-console-consumer.sh --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092 --topic test --from-beginning
+```
+
+
+
+
+
+### (2)kafka+spark streaming
+- 导入相关的jars:`spark-shell --jars`
+```
+# 注意jar之间需要使用逗号进行分割
+spark-shell --jars spark-streaming-kafka-0-10_2.11-2.3.0.jar,kafka_2.12-2.1.1.jar,kafka-clients-2.1.1.jar 
+```
+
+- spark-shell脚本
+```
+# 导入包
+import org.apache.spark.streaming.kafka010.KafkaUtils
+import org.apache.kafka.common.serialization.StringDeserializer
+import org.apache.spark.SparkConf
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
+import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
+import org.apache.spark.mllib.classification.SVMModel
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.sql.SparkSession
+
+# 配置
+val kafkaParams = Map[String, Object]("bootstrap.servers" -> "kafka1:9092","key.deserializer" -> classOf[StringDeserializer],"value.deserializer" -> classOf[StringDeserializer],"auto.offset.reset" -> "latest","group.id" -> "group_1","enable.auto.commit" -> (false: java.lang.Boolean))
+val streamingContext = new StreamingContext(sc, Seconds(1))
+val topics = Array("test0")
+# 接受消息
+val kafkaStream = KafkaUtils.createDirectStream[String, String](streamingContext,PreferConsistent,Subscribe[String, String](topics, kafkaParams))
+# 分词
+val words = kafkaStream.transform { rdd =>rdd.flatMap(record => (record.value().toString.split(" ")))}
+# 打印
+words.print()
+# 启动
+streamingContext.start() 
+# 关闭
+streamingContext.awaitTermination()
+```
+- 执行结果(flume监控log文件,log文件增加一行触发,flume将增加的行输入到kafka,spark从kafka订阅了topic接收消息,spark streaming自动对接收到的行进行分词并打印)
+![](./images/flume_kafka_spark_1.png) 
+![](./images/flume_kafka_spark_2.png)
+![](./images/flume_kafka_spark_3.png)  
