@@ -1,40 +1,45 @@
 # 基于Docker的大数据开发测试环境搭建及使用说明
-## 1.基本软件环境介绍
+
+## 1.基本软件环境
+### 简介
+本环境基于 [HDP3.0.1](hdp_3.0.1) 的各个组件版本进行配置，因为线上的集群就是按照 HDP3.0.1 来进行安装的。该组件的基本版本如下：![HDP3.0.0](./images/HDP3_0_0.png) 
 
 ### 1.1 软件版本
 
-- 操作系统: CentOS 6
+- 操作系统: CentOS 7
 - Java环境: OpenJDK 8
-- 基于docker-compose管理镜像和容器，并进行集群的编排
+- 基于 `docker stack` 管理镜像和容器，并进行集群的编排
 
 
-| 工具 | 介绍 |
-| --- | --- |
-| flume | Flume是Cloudera提供的一个高可用的，高可靠的，分布式的海量日志采集、聚合和传输的系统，Flume支持在日志系统中定制各类数据发送方，用于收集数据；同时，Flume提供对数据进行简单处理，并写到各种数据接受方（可定制）的能力。 |
-| kafka | Kafka是由Apache软件基金会开发的一个开源流处理平台，由Scala和Java编写。Kafka是一种高吞吐量的分布式发布订阅消息系统，它可以处理消费者规模的网站中的所有动作流数据。  |
-| zookeeper | ZooKeeper 是一个开源的分布式协调服务，由雅虎创建，是 Google Chubby 的开源实现。 分布式应用程序可以基于 ZooKeeper 实现诸如数据发布/订阅、负载均衡、命名服务、分布式协 调/通知、集群管理、Master 选举、配置维护，名字服务、分布式同步、分布式锁和分布式队列 等功能。|
-| hadoop | Hadoop是一个由Apache基金会所开发的分布式系统基础架构。 |
-| spark | Apache Spark 是专为大规模数据处理而设计的快速通用的计算引擎。Spark是UC Berkeley AMP lab (加州大学伯克利分校的AMP实验室)所开源的类Hadoop MapReduce的通用并行框架，Spark，拥有Hadoop MapReduce所具有的优点；但不同于MapReduce的是——Job中间输出结果可以保存在内存中，从而不再需要读写HDFS，因此Spark能更好地适用于数据挖掘与机器学习等需要迭代的MapReduce的算法。|
-| hive | hive是基于Hadoop的一个数据仓库工具，可以将结构化的数据文件映射为一张数据库表，并提供简单的sql查询功能，可以将sql语句转换为MapReduce任务进行运行。 其优点是学习成本低，可以通过类SQL语句快速实现简单的MapReduce统计，不必开发专门的MapReduce应用，十分适合数据仓库的统计分析。 |
-| hbase | HBase是一个分布式的、面向列的开源数据库，HBase不同于一般的关系数据库，它是一个适合于非结构化数据存储的数据库。另一个不同的是HBase基于列的而不是基于行的模式。|
-| yarn | Apache Hadoop YARN （Yet Another Resource Negotiator，另一种资源协调者）是一种新的 Hadoop 资源管理器，它是一个通用资源管理系统，可为上层应用提供统一的资源管理和调度，它的引入为集群在利用率、资源统一管理和数据共享等方面带来了巨大好处。|
+| 工具      | 介绍                                                                                                                                                                                                                                                                                                                                                           |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| flume     | Flume是Cloudera提供的一个高可用的，高可靠的，分布式的海量日志采集、聚合和传输的系统，Flume支持在日志系统中定制各类数据发送方，用于收集数据；同时，Flume提供对数据进行简单处理，并写到各种数据接受方（可定制）的能力。                                                                                                                                          |
+| kafka     | Kafka是由Apache软件基金会开发的一个开源流处理平台，由Scala和Java编写。Kafka是一种高吞吐量的分布式发布订阅消息系统，它可以处理消费者规模的网站中的所有动作流数据。                                                                                                                                                                                              |
+| zookeeper | ZooKeeper 是一个开源的分布式协调服务，由雅虎创建，是 Google Chubby 的开源实现。 分布式应用程序可以基于 ZooKeeper 实现诸如数据发布/订阅、负载均衡、命名服务、分布式协 调/通知、集群管理、Master 选举、配置维护，名字服务、分布式同步、分布式锁和分布式队列 等功能。                                                                                             |
+| hadoop    | Hadoop是一个由Apache基金会所开发的分布式系统基础架构。                                                                                                                                                                                                                                                                                                         |
+| spark     | Apache Spark 是专为大规模数据处理而设计的快速通用的计算引擎。Spark是UC Berkeley AMP lab (加州大学伯克利分校的AMP实验室)所开源的类Hadoop MapReduce的通用并行框架，Spark，拥有Hadoop MapReduce所具有的优点；但不同于MapReduce的是——Job中间输出结果可以保存在内存中，从而不再需要读写HDFS，因此Spark能更好地适用于数据挖掘与机器学习等需要迭代的MapReduce的算法。 |
+| hive      | hive是基于Hadoop的一个数据仓库工具，可以将结构化的数据文件映射为一张数据库表，并提供简单的sql查询功能，可以将sql语句转换为MapReduce任务进行运行。 其优点是学习成本低，可以通过类SQL语句快速实现简单的MapReduce统计，不必开发专门的MapReduce应用，十分适合数据仓库的统计分析。                                                                                  |
+| hbase     | HBase是一个分布式的、面向列的开源数据库，HBase不同于一般的关系数据库，它是一个适合于非结构化数据存储的数据库。另一个不同的是HBase基于列的而不是基于行的模式。                                                                                                                                                                                                  |
+| yarn      | Apache Hadoop YARN （Yet Another Resource Negotiator，另一种资源协调者）是一种新的 Hadoop 资源管理器，它是一个通用资源管理系统，可为上层应用提供统一的资源管理和调度，它的引入为集群在利用率、资源统一管理和数据共享等方面带来了巨大好处。                                                                                                                     |
 
-### 1.2 镜像依赖关系
+### 1.2 镜像依赖关系（TODO）
 
 ![镜像依赖关系图](https://github.com/ruoyu-chen/hadoop-docker/raw/master/images/arch.jpeg "镜像依赖关系")
 上图中，灰色的镜像（centos:6）为docker hub官方基础镜像。其它镜像（twinsen/hadoop:2.7.2等）都是在下层镜像的基础上实现的。这一镜像之间的依赖关系，决定了镜像的编译顺序.
 
 ## 2.使用方法简介
 
-### 2.1 安装docker
-具体安装方法请自行百度，安装完成后，在命令行下输入docker info进行测试，输出结果如下图所示，说明安装成功
-![docker安装测试结果](https://github.com/ruoyu-chen/hadoop-docker/raw/master/images/docker_info.png "Docker安装测试")
+### 2.1 安装 docker
+具体安装方法请自行百度，安装完成后，在命令行下输入 `docker info` 进行测试，输出结果如下图所示，说明安装成功
+![docker安装测试结果](./images/docker_info.png "Docker安装测试")
 
 ### 2.2 构建镜像
-首先，下载工程文件（ https://github.com/ruoyu-chen/hadoop-docker/archive/1.1.zip ），解压到任意目录下。
-接下来，可以在工程根目录下（包含有docker-compose-build-all.yml文件），在系统命令行中，依次使用下列命令构建镜像：
+镜像的构建可以通过 services 目录下的 Dockfile 使用 `docker build .` 直接生成，也可以使用 `docker-compose` 生成，推荐后者。
 	
-- 拉取MySQL 5.7 官方镜像
+* 构建基本操作系统和 OpenJDK 环境
+```bash
+docker-compose -f docker-compose-build.yml build os-jvm 
+```
 
 `docker pull mysql:5.7`
 
@@ -387,6 +392,11 @@ streamingContext.awaitTermination()
 ### (3)kafka消息订阅测试软件(Linux)
 
 
+## 参考
+1. [HDP3.0.1各个组件](hdp_3.0.1)
+2. [HDP组件支持查询](hdp_suport)
 
+[hdp_3.0.1]: https://docs.cloudera.com/HDPDocuments/HDP3/HDP-3.0.1/release-notes/content/comp_versions.html
+[hdp_support]: https://supportmatrix.hortonworks.com
 
 
