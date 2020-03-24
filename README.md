@@ -8,6 +8,12 @@
 
 - 操作系统: CentOS 7
 - Java环境: OpenJDK 8
+- Zookeeper: 3.4.6
+- Kafka: 1.0.1
+- Hadoop & yarn: 3.1.0
+- Hbase: 2.0.0
+- Spark: 2.3
+- hive/flume/storm: 待定
 - 基于 `docker stack` 管理镜像和容器，并进行集群的编排
 
 
@@ -36,10 +42,32 @@
 ### 2.2 构建镜像
 镜像的构建可以通过 services 目录下的 Dockfile 使用 `docker build .` 直接生成，也可以使用 `docker-compose` 生成，推荐后者。
 	
-* 构建基本操作系统和 OpenJDK 环境
+* 构建基本操作系统和 OpenJDK 环境（TODO）
 ```bash
+# 通过yum安装，镜像有点大
 docker-compose -f docker-compose-build.yml build os-jvm 
 ```
+
+
+
+
+```bash
+# 手动创建 bigdata 的网络， 其他服务可以依次往网络中添加
+docker network create --driver overlay --subnet 13.14.15.0/24 --ip-range 13.14.15.0/24 --gateway 13.14.15.1 bigdata
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 `docker pull mysql:5.7`
 
