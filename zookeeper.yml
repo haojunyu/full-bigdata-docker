@@ -1,0 +1,52 @@
+version: '3.7'
+
+services:
+  zoo1:
+    image: datagrand/zookeeper:official
+    hostname: zoo1
+    ports:
+      - 12181:2181
+    environment:
+      ZOO_MY_ID: 1
+      JVMFLAGS: -Xms1024m -Xmx1024m
+    volumes:
+      - ./volume/zookeeper/zk1/conf/zoo.cfg:/conf/zoo.cfg
+      - ./volume/zookeeper/zk1/data:/data
+      - ./volume/zookeeper/zk1/logs:/datalog 
+    networks:
+      - bigdata
+
+  zoo2:
+    image: datagrand/zookeeper:official
+    hostname: zoo2
+    ports:
+      - 12182:2182
+    environment:
+      ZOO_MY_ID: 2
+      JVMFLAGS: -Xms1024m -Xmx1024m
+    volumes:
+      - ./volume/zookeeper/zk2/conf/zoo.cfg:/conf/zoo.cfg
+      - ./volume/zookeeper/zk2/data:/data
+      - ./volume/zookeeper/zk2/logs:/datalog
+    networks:
+      - bigdata
+
+  zoo3:
+    image: datagrand/zookeeper:official
+    hostname: zoo3
+    ports:
+      - 12183:2183
+    environment:
+      ZOO_MY_ID: 3
+      JVMFLAGS: -Xms1024m -Xmx1024m
+    volumes:
+      - ./volume/zookeeper/zk3/conf/zoo.cfg:/conf/zoo.cfg
+      - ./volume/zookeeper/zk3/data:/data
+      - ./volume/zookeeper/zk3/logs:/datalog
+    networks:
+      - bigdata
+
+networks: 
+  bigdata: 
+    external: true
+    name: bigdata

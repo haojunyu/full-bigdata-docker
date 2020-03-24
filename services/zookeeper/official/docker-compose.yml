@@ -2,64 +2,70 @@ version: '3.7'
 
 services:
   zoo1:
-    image: registry.cn-beijing.aliyuncs.com/rj-bai/zookeeper:3.4.13
+    image: datagrand/zookeeper:official
     hostname: zoo1
+    ports:
+      - 12181:2181
     deploy:
       replicas: 1
       endpoint_mode: vip
-      placement:
-        constraints: [node.hostname == zookeeper-1]
     environment:
       ZOO_MY_ID: 1
       JVMFLAGS: -Xms1024m -Xmx1024m
       ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+    volumes:
+      - ./docker-entrypoint.sh:/docker-entrypoint.sh 
     healthcheck:
       test: ["CMD-SHELL","zkServer.sh","status || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 3
     networks:
-      - recharge
+      - bigdata
 
   zoo2:
-    image: registry.cn-beijing.aliyuncs.com/rj-bai/zookeeper:3.4.13
+    image: datagrand/zookeeper:official
     hostname: zoo2
+    ports:
+      - 12182:2181
     deploy:
       replicas: 1
-      placement:
-        constraints: [node.hostname == zookeeper-2]
     environment:
       ZOO_MY_ID: 2
       JVMFLAGS: -Xms1024m -Xmx1024m
       ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+    volumes:
+      - ./docker-entrypoint.sh:/docker-entrypoint.sh 
     healthcheck:
       test: ["CMD-SHELL","zkServer.sh","status || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 3
     networks:
-      - recharge
+      - bigdata
 
   zoo3:
-    image: registry.cn-beijing.aliyuncs.com/rj-bai/zookeeper:3.4.13
+    image: datagrand/zookeeper:official
     hostname: zoo3
+    ports:
+      - 12183:2181
     deploy:
       replicas: 1
-      placement:
-        constraints: [ node.hostname == zookeeper-3]
     environment:
       ZOO_MY_ID: 3
       JVMFLAGS: -Xms1024m -Xmx1024m
       ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888
+    volumes:
+      - ./docker-entrypoint.sh:/docker-entrypoint.sh 
     healthcheck:
       test: ["CMD-SHELL","zkServer.sh","status || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 3
     networks:
-      - recharge
+      - bigdata
 
 networks: 
-  recharge: 
+  bigdata: 
     external: true
-    name: recharge
+    name: bigdata
