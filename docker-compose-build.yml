@@ -1,8 +1,13 @@
 version: '2'
 services:
-  os-jvm:
-    build: ./services/os-jvm/centos7-openjdk8
-    image: datagrand/os-jvm:centos7-openjdk8
   zookeeper-official:
     build: ./services/zookeeper/official
     image: datagrand/zookeeper:official
+  kafka-official:
+    build: ./services/kafka/official
+    image: datagrand/kafka:official
+  
+  os-jvm:
+    build: ./services/os-jvm/centos7-openjdk8
+    image: datagrand/os-jvm:centos7-openjdk8
+

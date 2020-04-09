@@ -1,0 +1,62 @@
+version: '3.7'
+
+services:
+  kafka1:
+    image: datagrand/kafka:official
+    hostname: kafka1
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+    environment:
+      KAFKA_HEAP_OPTS: -Xmx1G -Xms1G
+      KAFKA_ADVERTISED_HOST_NAME: kafka1
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181,zoo2:2181,zoo3:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - bigdata
+
+  kafka2:
+    image: datagrand/kafka:official
+    hostname: kafka2
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+    environment:
+      KAFKA_HEAP_OPTS: -Xmx1G -Xms1G
+      KAFKA_ADVERTISED_HOST_NAME: kafka2
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181,zoo2:2181,zoo3:2181"
+      KAFKA_BROKER_ID: 2
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - bigdata
+
+  kafka3:
+    image: datagrand/kafka:official
+    hostname: kafka3
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+    environment:
+      KAFKA_HEAP_OPTS: -Xmx1G -Xms1G
+      KAFKA_ADVERTISED_HOST_NAME: kafka3
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181,zoo2:2181,zoo3:2181"
+      KAFKA_BROKER_ID: 3
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - bigdata
+  
+  kafka-manager:
+    image: kafkamanager/kafka-manager:latest
+    hostname: kfk_manager
+    ports:
+      - 9000:9000
+    environment:
+      ZK_HOSTS: "zoo1:2181,zoo2:2181,zoo3:2181"
+    networks:
+      - bigdata
+
+networks: 
+  bigdata: 
+    external: true
+    name: bigdata

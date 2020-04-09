@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  kafka-manager:
+    image: kafkamanager/kafka-manager:latest
+    hostname: kfk_manager
+    ports:
+      - 9000:9000
+    environment:
+      ZK_HOSTS: "zoo1:2181"
+    networks:
+      - bigdata
