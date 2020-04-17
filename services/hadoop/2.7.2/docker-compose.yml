@@ -1,0 +1,74 @@
+version: '3.7'
+
+services:
+  proxyer:
+    image:  nginx:latest
+    hostname: proxyer
+    ports:
+      - 50071:50070
+      - 8089:8088
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+    #environment:
+    #  JVMFLAGS: -Xms1024m -Xmx1024m
+    depends_on:
+      - hadoop-master
+    volumes:
+      - ./config/hadoop.conf:/etc/nginx/conf.d/hadoop.conf
+      - ./config/yarn.conf:/etc/nginx/conf.d/yarn.conf
+    networks:
+      - hadoop
+
+  hadoop-master:
+    image:  kiwenlau/hadoop:1.0 
+    hostname: hadoop-master
+    #ports:
+    #  - 50071:50070
+    #  - 8089:8088
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+    #environment:
+    #  JVMFLAGS: -Xms1024m -Xmx1024m
+    #depends_on:
+    #  - hadoop-slave1
+    #  - hadoop-slave2
+    tty: true
+    #volumes:
+    #  - ./docker-entrypoint.sh:/docker-entrypoint.sh 
+    networks:
+      - hadoop
+
+  hadoop-slave1:
+    image: kiwenlau/hadoop:1.0 
+    hostname: hadoop-slave1
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+    #environment:
+    #  JVMFLAGS: -Xms1024m -Xmx1024m
+    tty: true
+    #volumes:
+    #  - ./docker-entrypoint.sh:/docker-entrypoint.sh 
+    networks:
+      - hadoop
+
+  hadoop-slave2:
+    image:  kiwenlau/hadoop:1.0 
+    hostname: hadoop-slave2
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+    #environment:
+    #  JVMFLAGS: -Xms1024m -Xmx1024m
+    tty: true
+    #volumes:
+    #  - ./docker-entrypoint.sh:/docker-entrypoint.sh 
+    networks:
+      - hadoop
+
+networks: 
+  hadoop: 
+    external: true
+    name: hadoop
