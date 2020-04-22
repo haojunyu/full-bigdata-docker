@@ -1,0 +1,114 @@
+version: '3.7'
+
+services:
+  namenode:
+    image: datagrand/hadoop-namenode:3.1.3
+    hostname: namenode
+    networks:
+      - bigdata
+    volumes:
+    #  - namenode:/hadoop/dfs/name
+      - ./volume/hadoop/namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=bigdata
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  datanode1:
+    image: datagrand/hadoop-datanode:3.1.3
+    hostname: datanode1
+    networks:
+      - bigdata
+    volumes:
+    #  - datanode1:/hadoop/dfs/data
+      - ./volume/hadoop/datanode1:/hadoop/dfs/name
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  datanode2:
+    image: datagrand/hadoop-datanode:3.1.3
+    hostname: datanode2
+    networks:
+      - bigdata
+    volumes:
+    #  - datanode2:/hadoop/dfs/data
+      - ./volume/hadoop/datanode1:/hadoop/dfs/name
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  resourcemanager:
+    image: datagrand/hadoop-resourcemanager:3.1.3
+    hostname: resourcemanager
+    networks:
+      - bigdata
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870 datanode1:9864 datanode2:9864"
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      disable: true
+
+  nodemanager1:
+    image: datagrand/hadoop-nodemanager:3.1.3
+    hostname: nodemanager1
+    networks:
+      - bigdata
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870 datanode1:9864 datanode2:9864 resourcemanager:8088"
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  nodemanager2:
+    image: datagrand/hadoop-nodemanager:3.1.3
+    hostname: nodemanager2
+    networks:
+      - bigdata
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870 datanode1:9864 datanode2:9864 resourcemanager:8088"
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+ 
+
+#volumes:
+#  namenode:
+#  datanode1:
+#  datanode2:
+
+networks:
+  bigdata: 
+    external: true
+    name: bigdata

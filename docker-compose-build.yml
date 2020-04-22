@@ -1,13 +1,34 @@
-version: '2'
+version: '3'
 services:
-  zookeeper-official:
-    build: ./services/zookeeper/official
-    image: datagrand/zookeeper:official
-  kafka-official:
-    build: ./services/kafka/official
-    image: datagrand/kafka:official
-  
   os-jvm:
     build: ./services/os-jvm/centos7-openjdk8
     image: datagrand/os-jvm:centos7-openjdk8
 
+  zookeeper-official:
+    build: ./services/zookeeper/official
+    image: datagrand/zookeeper:official
+  
+    kafka-official:
+    build: ./services/kafka/official
+    image: datagrand/kafka:official
+
+  # hadoop images
+  base:
+    build: ./services/hadoop/3.1.3/base
+    image: datagrand/hadoop-base:3.1.3
+  
+  namenode:
+    build: ./services/hadoop/3.1.3/namenode
+    image: datagrand/hadoop-namenode:3.1.3
+
+  datanode:
+    build: ./services/hadoop/3.1.3/datanode
+    image: datagrand/hadoop-datanode:3.1.3
+  
+  resourcemanager:
+    build: ./services/hadoop/3.1.3/resourcemanager
+    image: datagrand/hadoop-resourcemanager:3.1.3
+  
+  nodemanager:
+    build: ./services/hadoop/3.1.3/nodemanager
+    image: datagrand/hadoop-nodemanager:3.1.3

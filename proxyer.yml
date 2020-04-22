@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  proxyer:
+    image:  nginx:latest
+    hostname: proxyer
+    ports:
+      - 50071:9000
+      - 8088:8088
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+    volumes:
+      - ./volume/nginx/config/hadoop.conf:/etc/nginx/conf.d/hadoop.conf
+      - ./volume/nginx/config/yarn.conf:/etc/nginx/conf.d/yarn.conf
+    networks:
+      - bigdata
+
+networks:
+  bigdata: 
+    external: true
+    name: bigdata
