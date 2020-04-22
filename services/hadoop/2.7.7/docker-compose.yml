@@ -1,0 +1,95 @@
+version: '3.7'
+
+services:
+  proxyer:
+    image:  nginx:latest
+    hostname: proxyer
+    ports:
+      - 50072:50070
+      - 8086:8088
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+    depends_on:
+      - namenode
+    volumes:
+      - ./config/hadoop.conf:/etc/nginx/conf.d/hadoop.conf
+      - ./config/yarn.conf:/etc/nginx/conf.d/yarn.conf
+    networks:
+      - hadoop
+
+  namenode:
+    image: datagrand/hadoop-namenode:2.7.7
+    hostname: namenode
+    networks:
+      - hadoop
+    volumes:
+      - namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  datanode:
+    image: datagrand/hadoop-datanode:2.7.7
+    hostname: datanode
+    networks:
+      - hadoop
+    volumes:
+      - datanode:/hadoop/dfs/data
+    env_file:
+      - ./hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070"
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  resourcemanager:
+    image: datagrand/hadoop-resourcemanager:2.7.7
+    hostname: resourcemanager
+    networks:
+      - hadoop
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      disable: true
+
+  nodemanager:
+    image: datagrand/hadoop-nodemanager:2.7.7
+    hostname: nodemanager
+    networks:
+      - hadoop
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+  
+
+volumes:
+  datanode:
+  namenode:
+
+networks:
+  hadoop:
+    external:
+      name: hadoop

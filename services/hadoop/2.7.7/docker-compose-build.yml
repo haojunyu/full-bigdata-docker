@@ -1,0 +1,25 @@
+version: '3'
+services:
+  base:
+    build: ./base
+    image: datagrand/hadoop-base:2.7.7
+  
+  base1:
+    build: ./base1
+    image: datagrand/hadoop-base1:2.7.7
+
+  namenode:
+    build: ./namenode
+    image: datagrand/hadoop-namenode:2.7.7
+
+  datanode:
+    build: ./datanode
+    image: datagrand/hadoop-datanode:2.7.7
+  
+  resourcemanager:
+    build: ./resourcemanager
+    image: datagrand/hadoop-resourcemanager:2.7.7
+  
+  nodemanager:
+    build: ./nodemanager
+    image: datagrand/hadoop-nodemanager:2.7.7
