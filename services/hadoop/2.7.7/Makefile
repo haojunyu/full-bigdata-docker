@@ -7,9 +7,18 @@ build:
 	sudo docker-compose -f docker-compose-build.yml build datanode
 	sudo docker-compose -f docker-compose-build.yml build resourcemanager
 	sudo docker-compose -f docker-compose-build.yml build nodemanager
+	sudo docker-compose -f docker-compose-build.yml build historyserver
 	#docker-compose build -t datagrand/hadoop-historyserver:$(current_branch) ./historyserver
 	#docker-compose build -t datagrand/hadoop-submit:$(current_branch) ./submit
 
+push:
+	sudo docker login dockerhub.datagrand.com
+	sudo docker-compose -f docker-compose-build.yml push base
+	sudo docker-compose -f docker-compose-build.yml push namenode
+	sudo docker-compose -f docker-compose-build.yml push datanode
+	sudo docker-compose -f docker-compose-build.yml push resourcemanager
+	sudo docker-compose -f docker-compose-build.yml push nodemanager
+	sudo docker-compose -f docker-compose-build.yml push historyserver
 wordcount:
 	docker build -t hadoop-wordcount ./submit
 	docker run --network ${DOCKER_NETWORK} --env-file ${ENV_FILE} datagrand/hadoop-base:$(current_branch) hdfs dfs -mkdir -p /input/

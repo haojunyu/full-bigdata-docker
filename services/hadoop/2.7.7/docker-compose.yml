@@ -8,7 +8,6 @@ services:
       - 50072:50070
       - 8086:8088
     deploy:
-      replicas: 1
       endpoint_mode: vip
     depends_on:
       - namenode
@@ -19,24 +18,23 @@ services:
       - hadoop
 
   namenode:
-    image: datagrand/hadoop-namenode:2.7.7
+    image: dockerhub.datagrand.com/yskg/hadoop-namenode:2.7.7
     hostname: namenode
     networks:
       - hadoop
     volumes:
       - namenode:/hadoop/dfs/name
     environment:
-      - CLUSTER_NAME=test
+      - CLUSTER_NAME=hadoop
     env_file:
       - ./hadoop.env
     deploy:
-      replicas: 1
       endpoint_mode: dnsrr
       restart_policy:
         condition: on-failure
 
   datanode:
-    image: datagrand/hadoop-datanode:2.7.7
+    image: dockerhub.datagrand.com/yskg/hadoop-datanode:2.7.7
     hostname: datanode
     networks:
       - hadoop
@@ -47,13 +45,12 @@ services:
     environment:
       SERVICE_PRECONDITION: "namenode:50070"
     deploy:
-      replicas: 1
       endpoint_mode: dnsrr
       restart_policy:
         condition: on-failure
 
   resourcemanager:
-    image: datagrand/hadoop-resourcemanager:2.7.7
+    image: dockerhub.datagrand.com/yskg/hadoop-resourcemanager:2.7.7
     hostname: resourcemanager
     networks:
       - hadoop
@@ -62,7 +59,6 @@ services:
     env_file:
       - ./hadoop.env
     deploy:
-      replicas: 1
       endpoint_mode: dnsrr
       restart_policy:
         condition: on-failure
@@ -70,7 +66,7 @@ services:
       disable: true
 
   nodemanager:
-    image: datagrand/hadoop-nodemanager:2.7.7
+    image: dockerhub.datagrand.com/yskg/hadoop-nodemanager:2.7.7
     hostname: nodemanager
     networks:
       - hadoop
@@ -79,17 +75,30 @@ services:
     env_file:
       - ./hadoop.env
     deploy:
-      replicas: 1
       endpoint_mode: dnsrr
       restart_policy:
         condition: on-failure
-  
+
+  historyserver:
+    image: dockerhub.datagrand.com/yskg/hadoop-historyserver:2.7.7
+    networks:
+      - hbase
+    volumes:
+      - historyserver:/hadoop/yarn/timeline
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
 
 volumes:
   datanode:
   namenode:
+  historyserver:
+
 
 networks:
-  hadoop:
-    external:
-      name: hadoop
+  hadoop: 
+    external: true
+    name: hadoop
