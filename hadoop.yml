@@ -10,7 +10,7 @@ services:
     #  - namenode:/hadoop/dfs/name
       - ./volume/hadoop/namenode:/hadoop/dfs/name
     environment:
-      - CLUSTER_NAME=bigdata
+      - CLUSTER_NAME=hadoop
     env_file:
       - ./volume/hadoop/hadoop.env
     deploy:

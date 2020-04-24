@@ -19,3 +19,7 @@
 - 单机上docker 容器之间的通信
 - 内网docker容器之间的通信
 - 公网docker容器之间的通信
+
+
+### docker 性能查看
+docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"

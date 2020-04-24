@@ -1,0 +1,86 @@
+version: '3.7'
+
+services:
+  proxyer:
+    image:  nginx:latest
+    hostname: proxyer
+    ports:
+      - 7077:7077
+      - 8080:8080
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+    depends_on:
+      - master
+    volumes:
+      - ./config/spark.conf:/etc/nginx/conf.d/spark.conf
+    networks:
+      - hadoop
+
+  master:
+    image: dockerhub.datagrand.com/yskg/spark-master:2.4.5-hadoop2.7.7
+    hostname: master
+    networks:
+      - hadoop
+    volumes:
+      - master:/opt/spark/logs
+    environment:
+      - CLUSTER_NAME=spark
+    env_file:
+      - ./hadoop.env
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  worker1:
+    image: dockerhub.datagrand.com/yskg/spark-worker:2.4.5-hadoop2.7.7
+    hostname: worker1
+    networks:
+      - hadoop
+    volumes:
+      - worker1:/opt/spark/logs
+    env_file:
+      - ./hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "master:8080"
+      SPARK_MASTER: "spark://master:7077"
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 1g
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  worker2:
+    image: dockerhub.datagrand.com/yskg/spark-worker:2.4.5-hadoop2.7.7
+    hostname: worker2
+    networks:
+      - hadoop
+    volumes:
+      - worker2:/opt/spark/logs
+    env_file:
+      - ./hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "master:8080"
+      SPARK_MASTER: "spark://master:7077"
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 1g
+    deploy:
+      replicas: 1
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+  
+
+volumes:
+  master:
+  worker1:
+  worker2:
+
+networks:
+  hadoop: 
+    external: true
+    name: hadoop

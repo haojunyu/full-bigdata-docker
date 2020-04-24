@@ -1,0 +1,14 @@
+version: '3'
+services:
+  base:
+    build: ./base
+    image: datagrand/spark-base:2.4.5
+  
+  master:
+    build: ./master
+    image: datagrand/spark-master:2.4.5
+
+  worker:
+    build: ./worker
+    image: datagrand/spark-worker:2.4.5
+  

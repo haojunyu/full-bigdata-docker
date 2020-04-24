@@ -112,7 +112,8 @@ volumes:
   namenode:
   hadoop_historyserver:
 
+
 networks:
-  hadoop:
-    external:
-      name: hadoop
+  hadoop: 
+    external: true
+    name: hadoop
