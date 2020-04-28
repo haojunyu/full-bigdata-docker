@@ -21,11 +21,11 @@ RUN mkdir /opt/hadoop-$HADOOP_VERSION/logs
 
 RUN mkdir /hadoop-data
 
-ENV HADOOP_PREFIX=/opt/hadoop-$HADOOP_VERSION
+ENV HADOOP_HOME=/opt/hadoop-$HADOOP_VERSION
 ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV MULTIHOMED_NETWORK=1
 
-ENV PATH $HADOOP_PREFIX/bin/:$PATH
+ENV PATH $HADOOP_HOME/bin/:$PATH
 
 ADD entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh

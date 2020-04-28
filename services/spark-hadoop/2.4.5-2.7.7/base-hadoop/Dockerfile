@@ -1,4 +1,4 @@
-FROM datagrand/hadoop-base:2.7.7
+FROM dockerhub.datagrand.com/yskg/hadoop-base:2.7.7
 
 MAINTAINER haojunyu <haojunyu@datagrand.com>
 
@@ -23,7 +23,7 @@ RUN mkdir /opt/spark/logs
 ENV SPARK_HOME /opt/spark
 ENV SPARK_LOG $SPARK_HOME/logs
 ENV PATH $SPARK_HOME/bin/:$PATH
-ENV SPARK_DIST_CLASSPATH "/etc/hadoop:$HADOOP_PREFIX/share/hadoop/common/lib/*:$HADOOP_PREFIX/share/hadoop/common/*:$HADOOP_PREFIX/share/hadoop/hdfs:$HADOOP_PREFIX/share/hadoop/hdfs/lib/*:$HADOOP_PREFIX/share/hadoop/hdfs/*:$HADOOP_PREFIX/share/hadoop/yarn/lib/*:$HADOOP_PREFIX/share/hadoop/yarn/*:$HADOOP_PREFIX/share/hadoop/mapreduce/lib/*:$HADOOP_PREFIX/share/hadoop/mapreduce/*:/third_party_jars/*.jar"
+ENV SPARK_DIST_CLASSPATH "/etc/hadoop:$HADOOP_HOME/share/hadoop/common/lib/*:$HADOOP_HOME/share/hadoop/common/*:$HADOOP_HOME/share/hadoop/hdfs:$HADOOP_HOME/share/hadoop/hdfs/lib/*:$HADOOP_HOME/share/hadoop/hdfs/*:$HADOOP_HOME/share/hadoop/yarn/lib/*:$HADOOP_HOME/share/hadoop/yarn/*:$HADOOP_HOME/share/hadoop/mapreduce/lib/*:$HADOOP_HOME/share/hadoop/mapreduce/*:/third_party_jars/*.jar"
 
 ADD entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh

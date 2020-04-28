@@ -23,3 +23,31 @@
 
 ### docker 性能查看
 docker stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+
+# 保存镜像
+docker save dockerhub.datagrand.com/nlp/pdf2txt:release_ci_20191017_85e0459 > pdf2txt-release_ci_20191017_85e0459.tar
+# 加载镜像
+docker load --input pdf2txt-release_ci_20191017_85e0459.tar
+
+
+
+tar -czvf pdf2txt-release_ci_20191017_85e0459.tar.gz pdf2txt-release_ci_20191017_85e0459.tar
+tar -xzvf pdf2txt-release_ci_20191017_85e0459.tar.gz
+
+/usr/share/elasticsearch/config/analysis-ik/IKAnalyzer.cfg.xml
+
+
+docker stack deploy --with-registry-auth --prune -c docker-compose.yml -c docker-compose.override.yml -c evaluate-extract-compose.yml -c extract-compose.yml  idps
+
+docker exec -it `docker ps --filter name=bd-ha_nodemanager --format "{{.ID}}"` bash
+ 
+
+docker exec -it `docker ps --filter name=jg_janusgraph --format "{{.ID}}"` bash
+
+
+docker exec -it `docker ps --filter name=jg_elasticsearch --format "{{.ID}}"` bash
+
+
+docker exec -it `docker ps --filter name=bg-es_elasticsearch --format "{{.ID}}"` bash
+
+docker exec -it `docker ps --filter name=bd-hb_hmaster --format "{{.ID}}"` bash

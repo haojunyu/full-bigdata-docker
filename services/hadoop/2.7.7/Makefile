@@ -2,14 +2,12 @@ DOCKER_NETWORK = docker-hadoop_default
 ENV_FILE = hadoop.env
 current_branch = 2.7.7
 build:
-	sudo docker-compose -f docker-compose-build.yml build base
-	sudo docker-compose -f docker-compose-build.yml build namenode
-	sudo docker-compose -f docker-compose-build.yml build datanode
-	sudo docker-compose -f docker-compose-build.yml build resourcemanager
-	sudo docker-compose -f docker-compose-build.yml build nodemanager
-	sudo docker-compose -f docker-compose-build.yml build historyserver
-	#docker-compose build -t datagrand/hadoop-historyserver:$(current_branch) ./historyserver
-	#docker-compose build -t datagrand/hadoop-submit:$(current_branch) ./submit
+	sudo docker-compose -f docker-compose-build.yml build --no-cache base
+	sudo docker-compose -f docker-compose-build.yml build --no-cache namenode
+	sudo docker-compose -f docker-compose-build.yml build --no-cache datanode
+	sudo docker-compose -f docker-compose-build.yml build --no-cache resourcemanager
+	sudo docker-compose -f docker-compose-build.yml build --no-cache nodemanager
+	sudo docker-compose -f docker-compose-build.yml build --no-cache historyserver
 
 push:
 	sudo docker login dockerhub.datagrand.com

@@ -1,4 +1,4 @@
-FROM datagrand/hadoop-base:2.7.7
+FROM dockerhub.datagrand.com/yskg/hadoop-base:2.7.7
 
 MAINTAINER haojunyu <haojunyu@datagrand.com>
 

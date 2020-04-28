@@ -7,8 +7,6 @@ services:
     ports:
       - 7078:7077
       - 8018:8080
-      - 50072:50070
-      - 8086:8088
     deploy:
       replicas: 1
       endpoint_mode: vip
@@ -16,8 +14,6 @@ services:
       - master
     volumes:
       - ./config/spark.conf:/etc/nginx/conf.d/spark.conf
-      - ./config/hadoop.conf:/etc/nginx/conf.d/hadoop.conf
-      - ./config/yarn.conf:/etc/nginx/conf.d/yarn.conf
     networks:
       - hadoop
 
