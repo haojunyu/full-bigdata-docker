@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   namenode:
-    image: datagrand/hadoop-namenode:3.1.3
+    image: dockerhub.datagrand.com/yskg/hadoop-namenode:2.7.7
     hostname: namenode
     networks:
       - bigdata
@@ -20,7 +20,7 @@ services:
         condition: on-failure
 
   datanode1:
-    image: datagrand/hadoop-datanode:3.1.3
+    image: dockerhub.datagrand.com/yskg/hadoop-datanode:2.7.7
     hostname: datanode1
     networks:
       - bigdata
@@ -38,7 +38,7 @@ services:
         condition: on-failure
 
   datanode2:
-    image: datagrand/hadoop-datanode:3.1.3
+    image: dockerhub.datagrand.com/yskg/hadoop-datanode:2.7.7
     hostname: datanode2
     networks:
       - bigdata
@@ -56,7 +56,7 @@ services:
         condition: on-failure
 
   resourcemanager:
-    image: datagrand/hadoop-resourcemanager:3.1.3
+    image: dockerhub.datagrand.com/yskg/hadoop-resourcemanager:2.7.7
     hostname: resourcemanager
     networks:
       - bigdata
@@ -73,7 +73,7 @@ services:
       disable: true
 
   nodemanager1:
-    image: datagrand/hadoop-nodemanager:3.1.3
+    image: dockerhub.datagrand.com/yskg/hadoop-nodemanager:2.7.7
     hostname: nodemanager1
     networks:
       - bigdata
@@ -88,7 +88,7 @@ services:
         condition: on-failure
 
   nodemanager2:
-    image: datagrand/hadoop-nodemanager:3.1.3
+    image: dockerhub.datagrand.com/yskg/hadoop-nodemanager:2.7.7
     hostname: nodemanager2
     networks:
       - bigdata
