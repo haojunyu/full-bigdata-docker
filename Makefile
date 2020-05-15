@@ -8,9 +8,30 @@ build:
 	docker-compose -f docker-compose-build.yml build resourcemanager
 	docker-compose -f docker-compose-build.yml build nodemanager
 	
-network:
-	docker network create --driver overlay --attachable --subnet 13.14.15.0/24 --ip-range 13.14.15.0/24 --gateway 13.14.15.1 bigdata
+bigdata:
+	find data/hadoop/ -name ".gitignore" -exec rm {} \;
+	sudo docker stack deploy -c bigdata-platform.yml --prune --with-registry-auth bp	
+
+proxyer:
+	sudo docker stack rm proxyer	
+	sudo docker stack deploy -c proxyer.yml --prune --with-registry-auth proxyer	
 
 clean:
-	# 检查网络bigdata是否创建，并清理
-	echo "xxx"
+	sudo docker stack rm proxyer
+	sudo docker stack rm yskg
+	sudo docker stack rm bp
+
+prune:
+	find volume/hadoop/ -name ".gitignore" -exec rm {} \;
+	sudo rm -r volume/hadoop/namenode/*
+	sudo rm -r volume/hadoop/datanode1/*
+	sudo rm -r volume/hadoop/datanode2/*
+	sudo rm -r volume/hadoop/historyserver/*
+
+network:
+	sudo docker network create --driver overlay --attachable bdp
+
+pull:
+	sudo docker-compose -f bigdata-platform.yml pull
+	sudo docker-compose -f proxyer.yml pull
+	sudo docker-compose -f docker-compose.yml pull

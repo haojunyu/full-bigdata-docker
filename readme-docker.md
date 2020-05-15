@@ -51,3 +51,25 @@ docker exec -it `docker ps --filter name=jg_elasticsearch --format "{{.ID}}"` ba
 docker exec -it `docker ps --filter name=bg-es_elasticsearch --format "{{.ID}}"` bash
 
 docker exec -it `docker ps --filter name=bd-hb_hmaster --format "{{.ID}}"` bash
+
+
+docker exec -it `docker ps --filter name=hjy_kgflow --format "{{.ID}}"` bash
+
+
+docker exec -it `docker ps --filter name=hjy_kg-api --format "{{.ID}}"` bash
+
+export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+
+
+docker exec -it `docker ps --filter name=bp_datanode2 --format "{{.ID}}"` bash
+
+
+
+
+#Thu May 07 10:41:46 UTC 2020
+namespaceID=1118802105
+clusterID=CID-f4cc077b-1b7b-4e61-a20f-4dfe47b0816e
+cTime=0
+storageType=NAME_NODE
+blockpoolID=BP-1271523882-13.14.15.89-1588738001346
+layoutVersion=-63
