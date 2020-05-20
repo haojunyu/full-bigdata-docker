@@ -1,0 +1,64 @@
+version: '3.7'
+
+services:
+  proxyer:
+    image:  nginx:latest
+    hostname: proxyer
+    ports:
+      - 16010:16010
+      - 16030:16030
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+    volumes:
+      - ./config/hbase.conf:/etc/nginx/conf.d/hbase.conf
+    networks:
+      - hadoop
+      
+  zoo:
+    image: zookeeper:3.4.10
+    hostname: zoo
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888
+    networks:
+      - hadoop
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  hmaster:
+    image: ${PROJECT_PREFIX}/hbase-hmaster:2.1.10
+    hostname: hmaster
+    env_file:
+      - ./hbase.env
+    environment:
+      SERVICE_PRECONDITION: "zoo:2181 namenode:50070 datanode:50075"
+    networks:
+      - hadoop
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  hregionserver:
+    image: ${PROJECT_PREFIX}/hbase-hregionserver:2.1.10
+    hostname: hregionserver
+    env_file:
+      - ./hbase.env
+    environment:
+      HBASE_CONF_hbase_regionserver_hostname: hregionserver
+      SERVICE_PRECONDITION: "hmaster:16000 zoo:2181 namenode:50070 datanode:50075"
+    networks:
+      - hadoop
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+
+networks:
+  hadoop: 
+    external: true
+    name: hadoop

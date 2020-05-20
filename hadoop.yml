@@ -5,7 +5,7 @@ services:
     image: dockerhub.datagrand.com/yskg/hadoop-namenode:2.7.7
     hostname: namenode
     networks:
-      - bigdata
+      - bdp
     volumes:
     #  - namenode:/hadoop/dfs/name
       - ./volume/hadoop/namenode:/hadoop/dfs/name
@@ -23,14 +23,14 @@ services:
     image: dockerhub.datagrand.com/yskg/hadoop-datanode:2.7.7
     hostname: datanode1
     networks:
-      - bigdata
+      - bdp
     volumes:
     #  - datanode1:/hadoop/dfs/data
-      - ./volume/hadoop/datanode1:/hadoop/dfs/name
+      - ./volume/hadoop/datanode1:/hadoop/dfs/data
     env_file:
       - ./volume/hadoop/hadoop.env
     environment:
-      SERVICE_PRECONDITION: "namenode:9870"
+      SERVICE_PRECONDITION: "namenode:50070"
     deploy:
       replicas: 1
       endpoint_mode: dnsrr
@@ -41,16 +41,15 @@ services:
     image: dockerhub.datagrand.com/yskg/hadoop-datanode:2.7.7
     hostname: datanode2
     networks:
-      - bigdata
+      - bdp
     volumes:
     #  - datanode2:/hadoop/dfs/data
-      - ./volume/hadoop/datanode1:/hadoop/dfs/name
+      - ./volume/hadoop/datanode2:/hadoop/dfs/data
     env_file:
       - ./volume/hadoop/hadoop.env
     environment:
-      SERVICE_PRECONDITION: "namenode:9870"
+      SERVICE_PRECONDITION: "namenode:50070"
     deploy:
-      replicas: 1
       endpoint_mode: dnsrr
       restart_policy:
         condition: on-failure
@@ -59,16 +58,31 @@ services:
     image: dockerhub.datagrand.com/yskg/hadoop-resourcemanager:2.7.7
     hostname: resourcemanager
     networks:
-      - bigdata
+      - bdp
     environment:
-      SERVICE_PRECONDITION: "namenode:9870 datanode1:9864 datanode2:9864"
+      SERVICE_PRECONDITION: "namenode:50070 datanode1:50075 datanode2:50075"
     env_file:
       - ./volume/hadoop/hadoop.env
     deploy:
-      replicas: 1
       endpoint_mode: dnsrr
       restart_policy:
         condition: on-failure
+    healthcheck:
+      disable: true
+
+  historyserver:
+    image: dockerhub.datagrand.com/yskg/hadoop-historyserver:2.7.7
+    networks:
+      - bdp
+    volumes:
+    #  - historyserver:/hadoop/yarn/timeline
+      - ./volume/hadoop/historyserver:/hadoop/yarn/timeline
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode1:50075 datanode2:50075 resourcemanager:8088"
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
     healthcheck:
       disable: true
 
@@ -76,39 +90,43 @@ services:
     image: dockerhub.datagrand.com/yskg/hadoop-nodemanager:2.7.7
     hostname: nodemanager1
     networks:
-      - bigdata
+      - bdp
     environment:
-      SERVICE_PRECONDITION: "namenode:9870 datanode1:9864 datanode2:9864 resourcemanager:8088"
+      SERVICE_PRECONDITION: "namenode:50070 datanode1:50075 datanode2:50075 resourcemanager:8088"
     env_file:
       - ./volume/hadoop/hadoop.env
     deploy:
-      replicas: 1
       endpoint_mode: dnsrr
       restart_policy:
         condition: on-failure
+    healthcheck:
+      disable: true
 
   nodemanager2:
     image: dockerhub.datagrand.com/yskg/hadoop-nodemanager:2.7.7
     hostname: nodemanager2
     networks:
-      - bigdata
+      - bdp
     environment:
-      SERVICE_PRECONDITION: "namenode:9870 datanode1:9864 datanode2:9864 resourcemanager:8088"
+      SERVICE_PRECONDITION: "namenode:50070 datanode1:50075 datanode2:50075 resourcemanager:8088"
     env_file:
       - ./volume/hadoop/hadoop.env
     deploy:
-      replicas: 1
       endpoint_mode: dnsrr
       restart_policy:
         condition: on-failure
+    healthcheck:
+      disable: true
  
-
 #volumes:
 #  namenode:
 #  datanode1:
 #  datanode2:
 
+
 networks:
-  bigdata: 
+  bdp: 
     external: true
-    name: bigdata
+    name: bdp
+
+

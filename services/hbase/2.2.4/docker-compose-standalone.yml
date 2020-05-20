@@ -1,0 +1,43 @@
+version: '3.7'
+
+services:
+  proxyer:
+    image:  nginx:latest
+    hostname: proxyer
+    ports:
+      - 16010:16010
+      - 2181:2181
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+    volumes:
+      - ./config/hbase.conf:/etc/nginx/conf.d/hbase.conf
+    networks:
+      - hadoop
+
+  hbase:
+    image: ${PROJECT_PREFIX}/hbase-standalone:2.1.10
+    hostname: hbase
+    volumes:
+      - hbase_data:/hbase-data
+      - hbase_zookeeper_data:/zookeeper-data
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075"
+    env_file:
+      - ./hbase-standalone.env
+    networks:
+      - hadoop
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+  
+
+volumes:
+  hbase_data:
+  hbase_zookeeper_data:
+
+networks:
+  hadoop: 
+    external: true
+    name: hadoop

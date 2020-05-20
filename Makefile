@@ -9,12 +9,24 @@ build:
 	docker-compose -f docker-compose-build.yml build nodemanager
 	
 bigdata:
-	find data/hadoop/ -name ".gitignore" -exec rm {} \;
-	sudo docker stack deploy -c bigdata-platform.yml --prune --with-registry-auth bp	
+	find volume/hadoop/ -name ".gitignore" -exec rm {} \;
+	sudo docker stack deploy -c bigdata-platform.yml --prune --with-registry-auth bdp	
+	#sudo docker stack deploy -c hadoop.yml --prune --with-registry-auth hd	
+	#sudo docker stack deploy -c spark.yml --prune --with-registry-auth sp	
+	#sudo docker stack deploy -c hbase.yml --prune --with-registry-auth hb	
+
+test_bp:
+	echo "hdfs status: "`curl -I -m 10 -o /dev/null -s -w %{http_code} localhost:50070`
+	echo "yarn status: "`curl -I -m 10 -o /dev/null -s -w %{http_code} localhost:8088`
+	echo "history status: "`curl -I -m 10 -o /dev/null -s -w %{http_code} localhost:8188`
+	echo "spark status: "`curl -I -m 10 -o /dev/null -s -w %{http_code} localhost:8080`
+	echo "hmaster status: "`curl -I -m 10 -o /dev/null -s -w %{http_code} localhost:16010`
+	echo "hregion1 status: "`curl -I -m 10 -o /dev/null -s -w %{http_code} localhost:16031`
+	echo "hregion2 status: "`curl -I -m 10 -o /dev/null -s -w %{http_code} localhost:16032`
 
 proxyer:
-	sudo docker stack rm proxyer	
-	sudo docker stack deploy -c proxyer.yml --prune --with-registry-auth proxyer	
+	sudo docker stack rm proxy	
+	sudo docker stack deploy -c proxyer.yml --prune --with-registry-auth proxy	
 
 clean:
 	sudo docker stack rm proxyer
@@ -34,4 +46,3 @@ network:
 pull:
 	sudo docker-compose -f bigdata-platform.yml pull
 	sudo docker-compose -f proxyer.yml pull
-	sudo docker-compose -f docker-compose.yml pull

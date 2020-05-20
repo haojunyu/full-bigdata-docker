@@ -1,6 +1,5 @@
 DOCKER_NETWORK = docker-hadoop_default
 ENV_FILE = hadoop.env
-current_branch = 2.1.10
 PROJECT_PREFIX = dockerhub.datagrand.com/yskg
 build:
 	sudo docker-compose -f docker-compose-build.yml build --no-cache base

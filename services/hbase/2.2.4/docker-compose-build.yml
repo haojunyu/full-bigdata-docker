@@ -1,0 +1,18 @@
+version: '3'
+services:
+  base:
+    build: ./base
+    image: datagrand/hbase-base:2.2.4
+  
+  standalone:
+    build: ./standalone
+    image: ${PROJECT_PREFIX}/hbase-standalone:2.2.4
+  
+  hmaster:
+    build: ./hmaster
+    image: ${PROJECT_PREFIX}/hbase-hmaster:2.2.4
+
+  hregionserver:
+    build: ./hregionserver
+    image: ${PROJECT_PREFIX}/hbase-hregionserver:2.2.4
+  

@@ -1,0 +1,269 @@
+version: '3.7'
+
+services:
+  namenode:
+    image: dockerhub.datagrand.com/yskg/hadoop-namenode:2.7.7
+    hostname: namenode
+    networks:
+      - bdp
+    volumes:
+    #  - namenode:/hadoop/dfs/name
+      - ./volume/hadoop/namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=hadoop
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  datanode1:
+    image: dockerhub.datagrand.com/yskg/hadoop-datanode:2.7.7
+    hostname: datanode1
+    networks:
+      - bdp
+    volumes:
+    #  - datanode1:/hadoop/dfs/data
+      - ./volume/hadoop/datanode1:/hadoop/dfs/data
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070"
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  datanode2:
+    image: dockerhub.datagrand.com/yskg/hadoop-datanode:2.7.7
+    hostname: datanode2
+    networks:
+      - bdp
+    volumes:
+    #  - datanode2:/hadoop/dfs/data
+      - ./volume/hadoop/datanode2:/hadoop/dfs/data
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070"
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  resourcemanager:
+    image: dockerhub.datagrand.com/yskg/hadoop-resourcemanager:2.7.7
+    hostname: resourcemanager
+    networks:
+      - bdp
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode1:50075 datanode2:50075"
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      disable: true
+
+  historyserver:
+    image: dockerhub.datagrand.com/yskg/hadoop-historyserver:2.7.7
+    networks:
+      - bdp
+    volumes:
+    #  - historyserver:/hadoop/yarn/timeline
+      - ./volume/hadoop/historyserver:/hadoop/yarn/timeline
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode1:50075 datanode2:50075 resourcemanager:8088"
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+    healthcheck:
+      disable: true
+
+  nodemanager1:
+    image: dockerhub.datagrand.com/yskg/hadoop-nodemanager:2.7.7
+    hostname: nodemanager1
+    networks:
+      - bdp
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode1:50075 datanode2:50075 resourcemanager:8088"
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    volumes:
+      - ./volume/share_jars:/app/lib
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      disable: true
+
+  nodemanager2:
+    image: dockerhub.datagrand.com/yskg/hadoop-nodemanager:2.7.7
+    hostname: nodemanager2
+    networks:
+      - bdp
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode1:50075 datanode2:50075 resourcemanager:8088"
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    volumes:
+      - ./volume/share_jars:/app/lib
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      disable: true
+ 
+  ### spark
+  master:
+    image: dockerhub.datagrand.com/yskg/spark-master:2.4.5-hadoop2.7.7
+    hostname: master
+    networks:
+      - bdp
+    volumes:
+    #  - master:/opt/spark/logs
+      - ./volume/spark/master/logs:/opt/spark/logs
+    environment:
+      - CLUSTER_NAME=spark
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  worker1:
+    image: dockerhub.datagrand.com/yskg/spark-worker:2.4.5-hadoop2.7.7
+    hostname: worker1
+    networks:
+      - bdp
+    volumes:
+    #  - worker1:/opt/spark/logs
+      - ./volume/spark/worker1/logs:/opt/spark/logs
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "master:8080"
+      SPARK_MASTER: "spark://master:7077"
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 1g
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  worker2:
+    image: dockerhub.datagrand.com/yskg/spark-worker:2.4.5-hadoop2.7.7
+    hostname: worker2
+    networks:
+      - bdp
+    volumes:
+    #  - worker2:/opt/spark/logs
+      - ./volume/spark/worker2/logs:/opt/spark/logs
+    env_file:
+      - ./volume/hadoop/hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "master:8080"
+      SPARK_MASTER: "spark://master:7077"
+      SPARK_WORKER_CORES: 2
+      SPARK_WORKER_MEMORY: 1g
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+  
+
+  ## hbase
+  zookeeper:
+    image: zookeeper:3.4.10
+    hostname: zookeeper
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888
+    networks:
+      - bdp
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  kafka:
+    image: wurstmeister/kafka
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    networks:
+      - bdp
+
+  hmaster:
+    image: dockerhub.datagrand.com/yskg/hbase-hmaster:2.1.10
+    hostname: hmaster
+    env_file:
+      - ./volume/hbase/hbase.env
+    environment:
+      SERVICE_PRECONDITION: "zookeeper:2181 namenode:50070 datanode1:50075 datanode2:50075"
+    networks:
+      - bdp
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  hregionserver1:
+    image: dockerhub.datagrand.com/yskg/hbase-hregionserver:2.1.10
+    hostname: hregionserver1
+    env_file:
+      - ./volume/hbase/hbase.env
+    environment:
+      HBASE_CONF_hbase_regionserver_hostname: hregionserver1
+      SERVICE_PRECONDITION: "hmaster:16000 zookeeper:2181 namenode:50070 datanode1:50075 datanode2:50075"
+    networks:
+      - bdp
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  hregionserver2:
+    image: dockerhub.datagrand.com/yskg/hbase-hregionserver:2.1.10
+    hostname: hregionserver2
+    env_file:
+      - ./volume/hbase/hbase.env
+    environment:
+      HBASE_CONF_hbase_regionserver_hostname: hregionserver2
+      SERVICE_PRECONDITION: "hmaster:16000 zookeeper:2181 namenode:50070 datanode1:50075 datanode2:50075"
+    networks:
+      - bdp
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+#volumes:
+#  namenode:
+#  datanode1:
+#  datanode2:
+#  master:
+#  worker1:
+#  worker2:
+
+
+networks:
+  bdp: 
+    external: true
+    name: bdp
+
+

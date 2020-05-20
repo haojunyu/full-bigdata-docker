@@ -5,18 +5,23 @@ services:
     image:  nginx:latest
     hostname: proxyer
     ports:
-      - 50071:9000
-      - 8088:8088
+      - 60070:50070     # hdfs
+      - 9088:8088       # yarn
+      - 9188:8188       # history
+      - 9080:8080       # spark
+      - 26010:16010     # hmaster
+      - 26031:16031     # hregionserver1
+      - 26032:16032     # hregionserver2
     deploy:
-      replicas: 1
       endpoint_mode: vip
     volumes:
-      - ./volume/nginx/config/hadoop.conf:/etc/nginx/conf.d/hadoop.conf
-      - ./volume/nginx/config/yarn.conf:/etc/nginx/conf.d/yarn.conf
+      - ./volume/nginx/conf/hadoop.conf:/etc/nginx/conf.d/hadoop.conf
+      - ./volume/nginx/conf/spark.conf:/etc/nginx/conf.d/spark.conf
+      - ./volume/nginx/conf/hbase.conf:/etc/nginx/conf.d/hbase.conf
     networks:
-      - bigdata
+      - bdp
 
 networks:
-  bigdata: 
+  bdp: 
     external: true
-    name: bigdata
+    name: bdp

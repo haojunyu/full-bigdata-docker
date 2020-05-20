@@ -1,0 +1,64 @@
+version: '3.7'
+
+services:
+  zookeeper:
+    image: zookeeper:3.4.10
+    hostname: zookeeper
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888
+    networks:
+      - bdp
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  hmaster:
+    image: dockerhub.datagrand.com/yskg/hbase-hmaster:2.1.10
+    hostname: hmaster
+    env_file:
+      - ./volume/hbase/hbase.env
+    environment:
+      SERVICE_PRECONDITION: "zookeeper:2181 namenode:50070 datanode1:50075 datanode2:50075"
+    networks:
+      - bdp
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  hregionserver1:
+    image: dockerhub.datagrand.com/yskg/hbase-hregionserver:2.1.10
+    hostname: hregionserver1
+    env_file:
+      - ./volume/hbase/hbase.env
+    environment:
+      HBASE_CONF_hbase_regionserver_hostname: hregionserver1
+      SERVICE_PRECONDITION: "hmaster:16000 zookeeper:2181 namenode:50070 datanode1:50075 datanode2:50075"
+    networks:
+      - bdp
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  hregionserver2:
+    image: dockerhub.datagrand.com/yskg/hbase-hregionserver:2.1.10
+    hostname: hregionserver2
+    env_file:
+      - ./volume/hbase/hbase.env
+    environment:
+      HBASE_CONF_hbase_regionserver_hostname: hregionserver2
+      SERVICE_PRECONDITION: "hmaster:16000 zookeeper:2181 namenode:50070 datanode1:50075 datanode2:50075"
+    networks:
+      - bdp
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+networks:
+  bdp: 
+    external: true
+    name: bdp

@@ -8,11 +8,11 @@ RUN yum update -y && \
     yum install -y net-tools curl nc perl which &&\
     yum clean all
 
-ENV HBASE_VERSION=2.1.10
+ENV HBASE_VERSION=2.2.4
 
-ENV HBASE_URL ftp://ftp.datagrand.com:50100/apache/hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-bin.tar.gz
+ENV HBASE_URL https://mirrors.tuna.tsinghua.edu.cn/apache/hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-bin.tar.gz
 RUN set -x \
-    && curl -u yskg:27232d30cdc1  "$HBASE_URL" -o /tmp/hbase.tar.gz \
+    && curl -fSL "$HBASE_URL" -o /tmp/hbase.tar.gz \
     && tar -xvf /tmp/hbase.tar.gz -C /opt/ \
     && rm /tmp/hbase.tar.gz*
 
