@@ -1,0 +1,29 @@
+version: '3'
+services:
+  base:
+    build: ./base
+    image: dockerhub.datagrand.com/yskg/hadoop-base:2.7.7
+  
+  base1:
+    build: ./base1
+    image: dockerhub.datagrand.com/yskg/hadoop-base1:2.7.7
+
+  namenode:
+    build: ./namenode
+    image: dockerhub.datagrand.com/yskg/hadoop-namenode:2.7.7
+
+  datanode:
+    build: ./datanode
+    image: dockerhub.datagrand.com/yskg/hadoop-datanode:2.7.7
+  
+  resourcemanager:
+    build: ./resourcemanager
+    image: dockerhub.datagrand.com/yskg/hadoop-resourcemanager:2.7.7
+  
+  nodemanager:
+    build: ./nodemanager
+    image: dockerhub.datagrand.com/yskg/hadoop-nodemanager:2.7.7
+
+  historyserver:
+    build: ./historyserver
+    image: dockerhub.datagrand.com/yskg/hadoop-historyserver:2.7.7

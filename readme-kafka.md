@@ -16,3 +16,17 @@ kafka-topics --zookeeper localhost:2181 --create --replication-factor 1 --partit
 kafka-console-producer.sh --broker-list localhost:9092 --topic topicA
 # 手动消费主题topicA的消息队列
 kafka-console-consumer --bootstrap-server localhost:9092 --topic topicA --from-beginning
+
+
+
+更新步骤：（当前在yskg-deploy目录下）
+1. 备份docker-compose.yml和data/kbqa文件夹
+mv docker-compose.yml docker-compose.yml.bak
+mv data/kbqa data/kbqa_bak
+
+2. 拷贝两个文件
+cp xxx/docker-compose.yml .
+tar  -xzvf xxx/kbqa.tar.gz -C data/
+
+3. 重启yskg服务
+Docker stack rm yskg && make yskg 

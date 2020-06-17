@@ -1,0 +1,131 @@
+version: '3.7'
+
+services:
+  proxyer:
+    image:  nginx:latest
+    hostname: proxyer
+    ports:
+      - 50072:50070
+      - 8086:8088
+    deploy:
+      endpoint_mode: vip
+    depends_on:
+      - namenode
+    volumes:
+      - ../config/hadoop.conf:/etc/nginx/conf.d/hadoop.conf
+    networks:
+      - hadoop
+
+  namenode:
+    image: dockerhub.datagrand.com/yskg/hadoop-all:2.7.7-alpine
+    hostname: namenode
+    networks:
+      - hadoop
+    volumes:
+      - namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=hadoop
+    env_file:
+      - ./hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    command: ["/run/namenode.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost:50070 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+  datanode:
+    image: dockerhub.datagrand.com/yskg/hadoop-all:2.7.7-alpine
+    hostname: datanode
+    networks:
+      - hadoop
+    volumes:
+      - datanode:/hadoop/dfs/data
+    env_file:
+      - ./hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070"
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    command: ["/run/datanode.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost:50075 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  resourcemanager:
+    image: dockerhub.datagrand.com/yskg/hadoop-all:2.7.7-alpine
+    hostname: resourcemanager
+    networks:
+      - hadoop
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    command: ["/run/resourcemanager.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost:8088 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nodemanager:
+    image: dockerhub.datagrand.com/yskg/hadoop-all:2.7.7-alpine
+    hostname: nodemanager
+    networks:
+      - hadoop
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    command: ["/run/nodemanager.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost:8042 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  historyserver:
+    image: dockerhub.datagrand.com/yskg/hadoop-all:2.7.7-alpine
+    networks:
+      - hadoop
+    volumes:
+      - historyserver:/hadoop/yarn/timeline
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+    command: ["/run/historyserver.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost:8188 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  datanode:
+  namenode:
+  historyserver:
+
+
+networks:
+  hadoop: 
+    external: true
+    name: hadoop

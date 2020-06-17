@@ -4,6 +4,7 @@
 - docker run: 启动容器；
 - docker-compose: 启动服务；项目需要哪些镜像，每个镜像怎么配置，要挂载哪些 volume, 等等信息都包含在 docker-compose.yml 里。docker-compose.yml为 docker-compose 准备的脚本，可以同时管理多个 container ，包括他们之间的关系、用官方 image 还是自己 build 、各种网络端口定义、储存空间定义等
 
+
 ### 2.docker端口相关
 - 和ports的区别是，expose不会将端口暴露给主机
 - ports
@@ -41,6 +42,9 @@ docker stack deploy --with-registry-auth --prune -c docker-compose.yml -c docker
 
 docker exec -it `docker ps --filter name=bd-ha_nodemanager --format "{{.ID}}"` bash
  
+docker container rm -f `docker ps --filter name=bp_hmaster --format "{{.ID}}"`
+docker container rm -f `docker ps --filter name=bp_hregionserver1 --format "{{.ID}}"`
+docker container rm -f `docker ps --filter name=bp_hregionserver2 --format "{{.ID}}"`
 
 docker exec -it `docker ps --filter name=jg_janusgraph --format "{{.ID}}"` bash
 
@@ -64,12 +68,6 @@ export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 docker exec -it `docker ps --filter name=bp_datanode2 --format "{{.ID}}"` bash
 
 
+docker run -p 3000:3000 -ti --rm --init node-vanilla
 
-
-#Thu May 07 10:41:46 UTC 2020
-namespaceID=1118802105
-clusterID=CID-f4cc077b-1b7b-4e61-a20f-4dfe47b0816e
-cTime=0
-storageType=NAME_NODE
-blockpoolID=BP-1271523882-13.14.15.89-1588738001346
-layoutVersion=-63
+docker run -it --rm --init dockerhub.datagrand.com/yskg/openjdk:8-jre-alpine
