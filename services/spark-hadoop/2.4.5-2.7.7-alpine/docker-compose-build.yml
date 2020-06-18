@@ -1,0 +1,14 @@
+version: '3'
+services:
+  base-hadoop:
+    build: ./base-hadoop
+    image: dockerhub.datagrand.com/yskg/spark-base:2.4.5-hadoop2.7.7
+  
+  master:
+    build: ./master
+    image: dockerhub.datagrand.com/yskg/spark-master:2.4.5-hadoop2.7.7
+
+  worker:
+    build: ./worker
+    image: dockerhub.datagrand.com/yskg/spark-worker:2.4.5-hadoop2.7.7
+  
