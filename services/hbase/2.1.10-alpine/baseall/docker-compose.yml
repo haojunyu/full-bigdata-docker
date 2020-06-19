@@ -1,0 +1,75 @@
+version: '3.7'
+
+services:
+  proxyer2:
+    image:  nginx:latest
+    hostname: proxyer
+    ports:
+      - 16110:16010
+      - 16130:16030
+    deploy:
+      replicas: 1
+      endpoint_mode: vip
+    volumes:
+      - ../config/hbase.conf:/etc/nginx/conf.d/hbase.conf
+    networks:
+      - hadoop
+      
+  zoo:
+    image: dockerhub.datagrand.com/yskg/zookeeper:3.4.10
+    hostname: zoo
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888
+    networks:
+      - hadoop
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  hmaster:
+    image: dockerhub.datagrand.com/yskg/hbase-all:2.1.10-alpine
+    hostname: hmaster
+    env_file:
+      - ./hbase.env
+    environment:
+      SERVICE_PRECONDITION: "zoo:2181 namenode:50070 datanode:50075"
+    networks:
+      - hadoop
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    command: ["/run/hmaster.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost:16010 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  hregionserver:
+    image: dockerhub.datagrand.com/yskg/hbase-all:2.1.10-alpine
+    hostname: hregionserver
+    env_file:
+      - ./hbase.env
+    environment:
+      HBASE_CONF_hbase_regionserver_hostname: hregionserver
+      SERVICE_PRECONDITION: "hmaster:16000 zoo:2181 namenode:50070 datanode:50075"
+    networks:
+      - hadoop
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    command: ["/run/hregionserver.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f localhost:16030 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  hadoop: 
+    external: true
+    name: hadoop

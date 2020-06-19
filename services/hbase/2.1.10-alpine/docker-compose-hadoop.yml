@@ -1,0 +1,88 @@
+version: '3.7'
+
+services:
+  namenode:
+    image: dockerhub.datagrand.com/yskg/hadoop-namenode:2.7.7
+    hostname: namenode
+    networks:
+      - hadoop
+    volumes:
+      - namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=hadoop
+    env_file:
+      - ./hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  datanode:
+    image: dockerhub.datagrand.com/yskg/hadoop-datanode:2.7.7
+    hostname: datanode
+    networks:
+      - hadoop
+    volumes:
+      - datanode:/hadoop/dfs/data
+    env_file:
+      - ./hadoop.env
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070"
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  resourcemanager:
+    image: dockerhub.datagrand.com/yskg/hadoop-resourcemanager:2.7.7
+    hostname: resourcemanager
+    networks:
+      - hadoop
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      disable: true
+
+  nodemanager:
+    image: dockerhub.datagrand.com/yskg/hadoop-nodemanager:2.7.7
+    hostname: nodemanager
+    networks:
+      - hadoop
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: on-failure
+
+  historyserver:
+    image: dockerhub.datagrand.com/yskg/hadoop-historyserver:2.7.7
+    networks:
+      - hadoop
+    volumes:
+      - historyserver:/hadoop/yarn/timeline
+    environment:
+      SERVICE_PRECONDITION: "namenode:50070 datanode:50075 resourcemanager:8088"
+    env_file:
+      - ./hadoop.env
+    deploy:
+      endpoint_mode: dnsrr
+
+volumes:
+  datanode:
+  namenode:
+  historyserver:
+
+
+networks:
+  hadoop: 
+    external: true
+    name: hadoop

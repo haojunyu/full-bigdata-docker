@@ -26,6 +26,14 @@ build_spark:
 	sudo docker build --no-cache -t dockerhub.datagrand.com/yskg/spark-all:2.4.5-hadoop2.7.7-alpine -f services/spark-hadoop/2.4.5-2.7.7-alpine/baseall/Dockerfile services/spark-hadoop/2.4.5-2.7.7-alpine/baseall/
 
 
+build_hbase:
+	sudo docker build --no-cache -t dockerhub.datagrand.com/yskg/hbase-base:2.1.10-alpine -f services/hbase/2.1.10-alpine/base/Dockerfile services/hbase/2.1.10-alpine/base/
+	sudo docker build --no-cache -t dockerhub.datagrand.com/yskg/hbase-hmaster:2.1.10-alpine -f services/hbase/2.1.10-alpine/hmaster/Dockerfile services/hbase/2.1.10-alpine/hmaster
+	sudo docker build --no-cache -t dockerhub.datagrand.com/yskg/hbase-hregionserver:2.1.10-alpine -f services/hbase/2.1.10-alpine/hregionserver/Dockerfile services/hbase/2.1.10-alpine/hregionserver/
+	sudo docker build --no-cache -t dockerhub.datagrand.com/yskg/hbase-all:2.1.10-alpine -f services/hbase/2.1.10-alpine/baseall/Dockerfile services/hbase/2.1.10-alpine/baseall/
+	
+
+
 	
 bigdata:
 	find volume/hadoop/ -name ".gitignore" -exec rm {} \;
@@ -65,3 +73,13 @@ network:
 pull:
 	sudo docker-compose -f bigdata-platform.yml pull
 	sudo docker-compose -f proxyer.yml pull
+	sudo docker push dockerhub.datagrand.com/yskg/hadoop-all:2.7.7-alpine
+	sudo docker push dockerhub.datagrand.com/yskg/spark-all:2.4.5-hadoop2.7.7-alpine
+	sudo docker push dockerhub.datagrand.com/yskg/hbase-all:2.1.10-alpine
+
+push:
+	sudo docker push dockerhub.datagrand.com/yskg/openjdk:8-jre-alpine
+	sudo docker push dockerhub.datagrand.com/yskg/hadoop-all:2.7.7-alpine
+	sudo docker push dockerhub.datagrand.com/yskg/spark-all:2.4.5-hadoop2.7.7-alpine
+	sudo docker push dockerhub.datagrand.com/yskg/hbase-all:2.1.10-alpine
+
